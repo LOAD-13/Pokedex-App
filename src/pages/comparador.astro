@@ -1,0 +1,17 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import ComparadorComponent from '../components/react/Comparador';
+import { getPokemonList } from '../services/pokeapi';
+
+const pokemonList = await getPokemonList(1025);
+---
+
+<Layout title="Comparador de Pokémon - Pokédex">
+  <div class="relative flex h-auto min-h-screen w-full flex-col">
+    <Header />
+    <main class="flex h-full grow flex-col">
+      <ComparadorComponent client:load pokemonList={pokemonList} />
+    </main>
+  </div>
+</Layout>
