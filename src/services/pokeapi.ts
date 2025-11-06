@@ -71,6 +71,78 @@ export async function getPokemonDescription(id: number): Promise<string> {
     return 'No description available.';
   }
 }
+// ... (código existente)
+
+// Nueva función para obtener todos los movimientos
+export async function getAllMoves(limit: number = 50): Promise<any[]> {
+  try {
+    const url = `${BASE_URL}/move?limit=${limit}`;
+    const data = await fetchAPI(url);
+    
+    const movePromises = data.results.map(async (move: any) => {
+      try {
+        const moveData = await fetchAPI(move.url);
+        return {
+          name: moveData.name,
+          spanish: moveData.names.find((n: any) => n.language.name === 'es')?.name || moveData.name,
+          type: moveData.type.name,
+          category: moveData.damage_class.name,
+          power: moveData.power || '-',
+          accuracy: moveData.accuracy || '-',
+          pp: moveData.pp,
+          description: moveData.effect_entries.find((e: any) => e.language.name === 'en')?.short_effect || 
+                      moveData.flavor_text_entries.find((f: any) => f.language.name === 'es')?.flavor_text || 
+                      'Sin descripción',
+        };
+      } catch (error) {
+        return null;
+      }
+    });
+    
+    const moves = await Promise.all(movePromises);
+    return moves.filter(m => m !== null);
+  } catch (error) {
+    console.error('Error fetching moves:', error);
+    return [];
+  }
+}
+
+// Nueva función para obtener todas las habilidades
+export async function getAllAbilities(limit: number = 50): Promise<any[]> {
+  try {
+    const url = `${BASE_URL}/ability?limit=${limit}`;
+    const data = await fetchAPI(url);
+    
+    const abilityPromises = data.results.map(async (ability: any) => {
+      try {
+        const abilityData = await fetchAPI(ability.url);
+        
+        // Obtener Pokémon que tienen esta habilidad
+        const pokemonNames = abilityData.pokemon
+          .slice(0, 5)
+          .map((p: any) => p.pokemon.name);
+        
+        return {
+          name: abilityData.name,
+          spanish: abilityData.names.find((n: any) => n.language.name === 'es')?.name || abilityData.name,
+          description: abilityData.effect_entries.find((e: any) => e.language.name === 'en')?.short_effect ||
+                      abilityData.flavor_text_entries.find((f: any) => f.language.name === 'es')?.flavor_text ||
+                      'Sin descripción',
+          pokemon: pokemonNames,
+          totalPokemon: abilityData.pokemon.length,
+        };
+      } catch (error) {
+        return null;
+      }
+    });
+    
+    const abilities = await Promise.all(abilityPromises);
+    return abilities.filter(a => a !== null);
+  } catch (error) {
+    console.error('Error fetching abilities:', error);
+    return [];
+  }
+}
 
 export async function getPokemonMoves(id: number | string): Promise<any[]> {
   try {

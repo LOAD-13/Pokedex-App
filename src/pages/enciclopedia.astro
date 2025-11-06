@@ -1,0 +1,43 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import EnciclopediaComponent from '../components/react/Enciclopedia';
+import { getAllMoves, getAllAbilities } from '../services/pokeapi';
+
+let moves: any[] = [];
+let abilities: any[] = [];
+
+try {
+  // Cargar datos de la API en paralelo
+  [moves, abilities] = await Promise.all([
+    getAllMoves(937), // Primeros 100 movimientos
+    getAllAbilities(310), // Primeras 100 habilidades
+  ]);
+} catch (error) {
+  console.error('Error loading encyclopedia data:', error);
+}
+---
+
+<Layout title="Enciclopedia Pokémon - Pokédex">
+  <div class="relative flex h-auto min-h-screen w-full flex-col">
+    <Header />
+    <main class="flex h-full grow flex-col">
+      {moves.length > 0 && abilities.length > 0 ? (
+        <EnciclopediaComponent 
+          client:load 
+          initialMoves={moves}
+          initialAbilities={abilities}
+        />
+      ) : (
+        <div class="flex items-center justify-center min-h-[60vh]">
+          <div class="flex flex-col items-center gap-4">
+            <div class="h-12 w-12 animate-spin rounded-full border-4 border-[#e4290c] border-t-transparent"></div>
+            <p class="text-gray-600 dark:text-gray-400 font-medium">
+              Cargando enciclopedia...
+            </p>
+          </div>
+        </div>
+      )}
+    </main>
+  </div>
+</Layout>

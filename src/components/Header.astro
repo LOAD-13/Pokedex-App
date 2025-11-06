@@ -17,6 +17,7 @@ function isActive(path: string) {
     <h2 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Pokédex</h2>
   </a>
   
+  <!-- Desktop Navigation -->
   <nav class="hidden items-center gap-9 lg:flex">
     <a 
       class={`text-sm font-medium transition-colors ${isActive('/') && !isActive('/comparador') && !isActive('/team-builder') && !isActive('/enciclopedia') ? 'text-[#e4290c]' : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white'}`}
@@ -44,7 +45,138 @@ function isActive(path: string) {
     </a>
   </nav>
   
-  <button class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-200 text-gray-700 dark:bg-white/10 dark:text-white lg:hidden">
-    <span class="material-symbols-outlined">menu</span>
+  <!-- Mobile Menu Button -->
+  <button 
+    id="mobile-menu-button"
+    class="flex h-10 w-10 cursor-pointer items-center justify-center rounded-full bg-gray-200 text-gray-700 dark:bg-white/10 dark:text-white lg:hidden"
+    aria-label="Toggle menu"
+  >
+    <span class="material-symbols-outlined" id="menu-icon">menu</span>
   </button>
 </header>
+
+<!-- Mobile Menu Overlay -->
+<div 
+  id="mobile-menu-overlay" 
+  class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden opacity-0 pointer-events-none transition-opacity duration-300"
+>
+</div>
+
+<!-- Mobile Menu -->
+<nav 
+  id="mobile-menu"
+  class="fixed top-0 right-0 z-50 h-full w-[280px] bg-[#f8f6f5] dark:bg-[#1F1F2D] shadow-2xl lg:hidden transform translate-x-full transition-transform duration-300 ease-in-out"
+>
+  <div class="flex flex-col h-full">
+    <!-- Menu Header -->
+    <div class="flex items-center justify-between border-b border-gray-200 dark:border-white/10 px-6 py-4">
+      <h3 class="text-lg font-bold text-gray-900 dark:text-white">Menú</h3>
+      <button 
+        id="mobile-menu-close"
+        class="flex h-8 w-8 items-center justify-center rounded-full text-gray-700 dark:text-white hover:bg-gray-200 dark:hover:bg-white/10 transition-colors"
+        aria-label="Close menu"
+      >
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    
+    <!-- Menu Items -->
+    <div class="flex-1 overflow-y-auto py-6">
+      <div class="flex flex-col gap-2 px-4">
+        <a 
+          href="/"
+          class={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+            isActive('/') && !isActive('/comparador') && !isActive('/team-builder') && !isActive('/enciclopedia')
+              ? 'bg-[#e4290c] text-white'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
+          }`}
+        >
+          <span class="material-symbols-outlined">explore</span>
+          <span class="font-medium">Explorar</span>
+        </a>
+        
+        <a 
+          href="/comparador"
+          class={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+            isActive('/comparador')
+              ? 'bg-[#e4290c] text-white'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
+          }`}
+        >
+          <span class="material-symbols-outlined">compare_arrows</span>
+          <span class="font-medium">Comparador</span>
+        </a>
+        
+        <a 
+          href="/team-builder"
+          class={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+            isActive('/team-builder')
+              ? 'bg-[#e4290c] text-white'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
+          }`}
+        >
+          <span class="material-symbols-outlined">groups</span>
+          <span class="font-medium">Team Builder</span>
+        </a>
+        
+        <a 
+          href="/enciclopedia"
+          class={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+            isActive('/enciclopedia')
+              ? 'bg-[#e4290c] text-white'
+              : 'text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10'
+          }`}
+        >
+          <span class="material-symbols-outlined">menu_book</span>
+          <span class="font-medium">Enciclopedia</span>
+        </a>
+      </div>
+    </div>
+    
+    <!-- Menu Footer -->
+    <div class="border-t border-gray-200 dark:border-white/10 px-6 py-4">
+      <p class="text-xs text-gray-500 dark:text-gray-400 text-center">
+        Pokédex v1.0
+      </p>
+    </div>
+  </div>
+</nav>
+
+<script>
+  const menuButton = document.getElementById('mobile-menu-button');
+  const menuIcon = document.getElementById('menu-icon');
+  const mobileMenu = document.getElementById('mobile-menu');
+  const mobileMenuOverlay = document.getElementById('mobile-menu-overlay');
+  const closeButton = document.getElementById('mobile-menu-close');
+  
+  function openMenu() {
+    mobileMenu?.classList.remove('translate-x-full');
+    mobileMenuOverlay?.classList.remove('opacity-0', 'pointer-events-none');
+    document.body.style.overflow = 'hidden';
+    if (menuIcon) menuIcon.textContent = 'close';
+  }
+  
+  function closeMenu() {
+    mobileMenu?.classList.add('translate-x-full');
+    mobileMenuOverlay?.classList.add('opacity-0', 'pointer-events-none');
+    document.body.style.overflow = '';
+    if (menuIcon) menuIcon.textContent = 'menu';
+  }
+  
+  menuButton?.addEventListener('click', () => {
+    if (mobileMenu?.classList.contains('translate-x-full')) {
+      openMenu();
+    } else {
+      closeMenu();
+    }
+  });
+  
+  closeButton?.addEventListener('click', closeMenu);
+  mobileMenuOverlay?.addEventListener('click', closeMenu);
+  
+  // Close menu when clicking on a link
+  const menuLinks = mobileMenu?.querySelectorAll('a');
+  menuLinks?.forEach(link => {
+    link.addEventListener('click', closeMenu);
+  });
+</script>
