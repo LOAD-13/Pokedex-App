@@ -1,16 +1,18 @@
 ---
+import Layout from '../layouts/Layout.astro';
+import Header from '../components/Header.astro';
+import PokemonGrid from '../components/react/PokemonGrid';
+import { getPokemonList } from '../services/pokeapi';
 
+// Obtener los primeros 151 Pokémon (Gen 1)
+const pokemon = await getPokemonList(1825);
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout title="Pokédex - Explora el Mundo Pokémon">
+  <div class="relative flex h-auto min-h-screen w-full flex-col">
+    <Header />
+    <main class="flex h-full grow flex-col">
+      <PokemonGrid client:load initialPokemon={pokemon} />
+    </main>
+  </div>
+</Layout>

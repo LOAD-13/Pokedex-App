@@ -1,0 +1,79 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Header from '../../components/Header.astro';
+import PokemonDetail from '../../components/react/PokemonDetail';
+import { 
+  getPokemon, 
+  getPokemonSpecies, 
+  getEvolutionChain,
+  getPokemonDescription,
+  getPokemonMoves
+} from '../../services/pokeapi';
+import type { ChainLink } from '../../types/pokemon';
+
+// ⭐ GENERACIÓN ESTÁTICA DE RUTAS
+export async function getStaticPaths() {
+  const totalPokemon = 1025; // Cambia a 1025 para todas las generaciones
+  
+  return Array.from({ length: totalPokemon }, (_, i) => ({
+    params: { id: String(i + 1) }
+  }));
+}
+
+const { id } = Astro.params;
+
+if (!id) {
+  return Astro.redirect('/');
+}
+
+let pokemonData;
+
+try {
+  const pokemon = await getPokemon(id);
+  const description = await getPokemonDescription(pokemon.id);
+  const species = await getPokemonSpecies(pokemon.id);
+  const evolutionData = await getEvolutionChain(species.evolution_chain.url);
+  const moves = await getPokemonMoves(pokemon.id);
+
+  // Procesar cadena de evolución
+  function parseEvolutionChain(chain: ChainLink): any[] {
+    const evolutions = [];
+    let current: ChainLink | null = chain;
+    
+    while (current) {
+      const idMatch = current.species.url.match(/\/(\d+)\//);
+      const id = idMatch ? parseInt(idMatch[1]) : 0;
+      
+      evolutions.push({
+        id,
+        name: current.species.name,
+        minLevel: current.evolution_details[0]?.min_level || null,
+      });
+      
+      current = current.evolves_to[0] || null;
+    }
+    
+    return evolutions;
+  }
+
+  const evolutionChain = parseEvolutionChain(evolutionData.chain);
+  
+  // Preparar datos para el componente React
+  pokemonData = {
+    pokemon,
+    description,
+    evolutionChain,
+    moves,
+  };
+} catch (error) {
+  console.error('Error loading Pokemon:', error);
+  return Astro.redirect('/');
+}
+---
+
+<Layout title={`${pokemonData.pokemon.name.charAt(0).toUpperCase() + pokemonData.pokemon.name.slice(1)} - Pokédex`} description={pokemonData.description}>
+  <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden">
+    <Header />
+    <PokemonDetail client:load pokemonData={pokemonData} />
+  </div>
+</Layout>
